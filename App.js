@@ -28,12 +28,6 @@ export default class App extends Component<Props> {
         <Text style={styles.welcome}>
           Welcome to Spinny Globe
         </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
         <Map/>
       </View>
     );

@@ -17,7 +17,7 @@ import Svg,{
     Stop
 } from 'react-native-svg';
 
-import { geoMercator, geoPath } from "d3-geo"
+import { geoMercator,geoOrthographic, geoPath } from "d3-geo"
 import { feature } from "topojson-client"
 
 import React, { Component } from 'react';
@@ -27,16 +27,17 @@ export default class Map extends Component {
     this.state = {
       worldData: [],
     }
+    this.handleCountryClick = this.handleCountryClick.bind(this)
   }
   projection() {
-    return geoMercator()
-      .scale(100)
+    return geoOrthographic()
+      .scale(200)
       .translate([ 800 / 2, 450 / 2 ])
   }
-  componentDidMount() {
+  
+  getData() {
     fetch('https://unpkg.com/world-atlas@1/world/110m.json')
       .then(response => {
-        console.log(response);
         if (response.status !== 200) {
           console.log(`There was a problem: ${response.status}`)
           return
@@ -48,6 +49,15 @@ export default class Map extends Component {
         })
       })
   }
+  
+  componentWillMount() {
+    this.getData();
+  }
+  
+  handleCountryClick(data) {
+    console.log('data');
+  }
+  
   render() {
     return (
       <Svg width={ 800 } height={ 450 } viewBox="0 0 800 450">
@@ -64,15 +74,6 @@ export default class Map extends Component {
               />
             ))
           }
-        </G>
-        <G className="markers">
-          <Circle
-            cx={ this.projection()([8,48])[0] }
-            cy={ this.projection()([8,48])[1] }
-            r={ 10 }
-            fill="#E91E63"
-            className="marker"
-          />
         </G>
       </Svg>
     )
