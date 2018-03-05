@@ -17,26 +17,63 @@ import Svg,{
     Stop
 } from 'react-native-svg';
 
+import { geoMercator, geoPath } from "d3-geo"
+import { feature } from "topojson-client"
+
 import React, { Component } from 'react';
 export default class Map extends Component {
-  render () {
+  constructor() {
+    super()
+    this.state = {
+      worldData: [],
+    }
+  }
+  projection() {
+    return geoMercator()
+      .scale(100)
+      .translate([ 800 / 2, 450 / 2 ])
+  }
+  componentDidMount() {
+    fetch('https://unpkg.com/world-atlas@1/world/110m.json')
+      .then(response => {
+        console.log(response);
+        if (response.status !== 200) {
+          console.log(`There was a problem: ${response.status}`)
+          return
+        }
+        response.json().then(worldData => {
+          this.setState({
+            worldData: feature(worldData, worldData.objects.countries).features,
+          })
+        })
+      })
+  }
+  render() {
     return (
-      <Svg height='100' width='100'>
-        <Circle
-          cx='50'
-          cy='50'
-          r='45'
-          stroke='blue'
-          strokeWidth='2.5'
-          fill='green' />
-        <Rect
-          x='15'
-          y='15'
-          width='70'
-          height='70'
-          stroke='red'
-          strokeWidth='2'
-          fill='yellow' />
+      <Svg width={ 800 } height={ 450 } viewBox="0 0 800 450">
+        <G className="countries">
+          {
+            this.state.worldData.map((d,i) => (
+              <Path
+                key={ `path-${ i }` }
+                d={ geoPath().projection(this.projection())(d) }
+                className="country"
+                fill={ `rgba(38,50,56,${1 / this.state.worldData.length * i})` }
+                stroke="#FFFFFF"
+                strokeWidth={ 0.5 }
+              />
+            ))
+          }
+        </G>
+        <G className="markers">
+          <Circle
+            cx={ this.projection()([8,48])[0] }
+            cy={ this.projection()([8,48])[1] }
+            r={ 10 }
+            fill="#E91E63"
+            className="marker"
+          />
+        </G>
       </Svg>
     )
   }
