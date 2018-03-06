@@ -1,82 +1,95 @@
 
-import React from 'react';
+import Svg,{
+    Circle,
+    Ellipse,
+    G,
+    LinearGradient,
+    RadialGradient,
+    Line,
+    Path,
+    Polygon,
+    Polyline,
+    Rect,
+    Symbol,
+    Text,
+    Use,
+    Defs,
+    Stop
+} from 'react-native-svg';
+
 import {
-  StyleSheet,
-  Text,
-  View,
-  ART,
-  LayoutAnimation,
-  Dimensions,
-  TouchableWithoutFeedback,
+  ART, 
+  TouchableOpacity, 
+  Button, 
+  View
 } from 'react-native';
 
 const {
-  Surface,
-  Group,
-  Rectangle,
-  Shape,
+  Shape
 } = ART;
 
-import * as scale from 'd3-scale';
-import * as shape from 'd3-shape';
-import * as d3Array from 'd3-array';
-import AnimShape from '../art/AnimShape';
-import Theme from '../theme';
 
-const d3 = {
-  scale,
-  shape,
-};
+import { geoMercator,geoOrthographic, geoPath } from "d3-geo"
+import { feature } from "topojson-client"
 
-export default class Map extends Component {
-  constructor(props) {
-    super(props);
-
-  } 
-  var height = 600,
-        width = 900,
-        projection = d3.geoMercator(), // 1 this is extracting the projection algo from d3
-        mexico = void 0;
-
-    var path = d3.geoPath().projection(projection);
-
-    var svg = d3.select("#map")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
-    d3.json("geo-data.json", function(data) {
-
-      var states = topojson.feature(data, data.objects.MEX_adm1);
-
-      var b, s, t;
-      projection.scale(1).translate([0, 0]);
-      var b = path.bounds(states); // this is called the bounding box, more latertml
-
-      var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
-      var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
-      projection.scale(s).translate(t);
-
-
-      var map = svg.append('g').attr('class', 'boundary'); // add styling by adding class
-
-      mexico = map.selectAll('path').data(states.features);
-
-      mexico.enter()
-         .append('path') 
-         .attr('d', path); 
-
-      mexico.attr('fill', '#eee');
-
-      mexico.exit().remove();
-
-    });
-
+import React, { Component } from 'react';
+export default class Map2 extends Component {
+  constructor() {
+    super()
+    this.state = {
+      worldData: [],
+    }
+    this.handleCountryClick = this.handleCountryClick.bind(this)
+  }
+  projection() {
+    return geoOrthographic()
+      .scale(200)
+      .translate([ 800 / 2, 450 / 2 ])
+      .rotate([0, -40, 0])
+  }
+  
+  getData() {
+    fetch('https://unpkg.com/world-atlas@1/world/110m.json')
+      .then(response => {
+        if (response.status !== 200) {
+          console.log(`There was a problem: ${response.status}`)
+          return
+        }
+        response.json().then(worldData => {
+          this.setState({
+            worldData: feature(worldData, worldData.objects.countries).features,
+          })
+        })
+      })
+  }
+  
+  componentWillMount() {
+    this.getData();
+  }
+  
+  handleCountryClick(data) {
+    console.log('data');
+  }
+  
   render() {
     return (
-      <View >
-
-      </View>
-    );
+      <Svg width={ 800 } height={ 450 } viewBox="0 0 800 450">
+        <G className="countries">
+          {
+            this.state.worldData.map((d,i) => (
+                <Path
+                  key={ `path-${ i }` }
+                  d={ geoPath().projection(this.projection())(d) }
+                  className="country"
+                  fill={ `rgba(38,50,56,${1 / this.state.worldData.length * i})` }
+                  stroke="#FFFFFF"
+                  strokeWidth={ 0.5 }
+                />
+            ))
+          }
+        </G>
+      </Svg>
+    )
   }
 }
+

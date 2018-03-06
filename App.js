@@ -12,6 +12,7 @@ import {
   View
 } from 'react-native';
 import Map from './map.js';
+import Map2 from './map2.js';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
@@ -28,7 +29,7 @@ export default class App extends Component<Props> {
         <Text style={styles.welcome}>
           Welcome to Spinny Globe
         </Text>
-        <Map/>
+        <Map2/>
       </View>
     );
   }

@@ -33,6 +33,7 @@ export default class Map extends Component {
     return geoOrthographic()
       .scale(200)
       .translate([ 800 / 2, 450 / 2 ])
+      .rotate([0, 0, 50])
   }
   
   getData() {
